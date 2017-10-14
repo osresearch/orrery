@@ -29,6 +29,19 @@ top_height = 7 * gsh + 2 * brace_height;
 inner_height = top_height + gsh;
 
 
+// height for each of the planets
+moon_height = top_height + brace_height;
+earth_height = moon_height + gsh + 1;
+venus_height = earth_height + 1;
+mercury_height = venus_height + 1;
+sun_height = mercury_height + 10;
+
+mars_height = top_height + brace_height - 2;
+jupiter_height = mars_height - 1;
+saturn_height = jupiter_height - 1;
+
+
+
 // Create an h mm high gear with n teeth and a shaft of s mm 
 module gear(n,s)
 {
@@ -66,9 +79,6 @@ module shaft(h,s)
 
 module inner_drive()
 {
-	// jupiter, part 1
-	translate([0,0,4*gsh+brace_height]) gear(16,3.0);
-
 	// mars
 	translate([0,0,3*gsh+brace_height]) gear(32,3.0);
 
@@ -93,14 +103,14 @@ module inner_shafts()
 	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)])
 	color("green") translate([0,0,6*gsh+brace_height]) {
 		gear(76, 3.6);
-		shaft(top_height-6*gsh-brace_height-1.2,3.6);
+		shaft(saturn_height-6*gsh-brace_height,3.6);
 	}
 
 	// jupiter
 	rotate([0,0,time*(16/60)*(36/61)])
 	color("purple") translate([0,0,5*gsh+brace_height]) {
 		gear(61, 3.4);
-		shaft(top_height-5*gsh-brace_height-0.8,3.4);
+		shaft(jupiter_height-5*gsh-brace_height,3.4);
 	}
 
 
@@ -108,32 +118,32 @@ module inner_shafts()
 	rotate([0,0,time*32/60])
 	color("red") translate([0,0,3*gsh+brace_height]) {
 		gear(60,3.2);
-		shaft(top_height-3*gsh-brace_height-0.4,3.2);
+		shaft(mars_height-3*gsh-brace_height,3.2);
 	}
 
 	// fixed gear for the moon
-	color("silver") translate([0,0,3*gsh]) shaft(top_height+gsh-3*gsh,3.0);
+	color("silver") translate([0,0,3*gsh]) shaft(moon_height-3*gsh,3.0);
 
 
 	// earth
 	rotate([0,0,time*46/46])
 	color("blue") translate([0,0,2*gsh]) {
 		gear(46,2.8);
-		shaft(inner_height+10-2*gsh-2,2.8);
+		shaft(earth_height-2*gsh,2.8);
 	}
 
 	// venus
 	rotate([0,0,time*57/35])
 	color("pink") translate([0,0,1*gsh]) {
 		gear(35,2.6);
-		shaft(inner_height+10-1*gsh-1,2.6);
+		shaft(venus_height-1*gsh,2.6);
 	}
 
 	// mercury
 	rotate([0,0,time*74/18])
 	color("gray") translate([0,0,0*gsh]) {
 		gear(18,2.4);
-		shaft(inner_height+10-0*gsh-0,2.4);
+		shaft(mercury_height-0*gsh,2.4);
 	}
 }
 
@@ -161,6 +171,42 @@ module outer_drive1()
 
 
 
+module planets()
+{
+	rotate([0,0,time*74/18])
+	color("gray") translate([0,-0.5,mercury_height-1]) cube([20,1,1]);
+
+	rotate([0,0,time*57/35])
+	color("pink") translate([0,-0.5,venus_height-1]) cube([30,1,1]);
+
+	rotate([0,0,time*46/46])
+	translate([0,0,earth_height-1])
+	{
+	color("blue") translate([0,-0.5,0]) cube([146*teeth_rad+5,1,1]);
+
+	translate([(146+11)*teeth_rad,0,-3])
+	rotate([0,0,-time*(146/11)])
+	{
+		gear(11,2);
+		shaft(10,2);
+		translate([0,0,10]) sphere(r=4);
+		translate([5,0,10]) sphere(r=1);
+	}
+	}
+
+	rotate([0,0,time*(32/60)])
+	translate([0,0,mars_height-1])
+	color("red") translate([0,-0.5,0]) cube([80,1,1]);
+
+	rotate([0,0,time*(16/60)*(36/61)])
+	translate([0,0,jupiter_height-1])
+	color("purple") translate([0,-0.5,0]) cube([100,1,1]);
+
+	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)])
+	translate([0,0,saturn_height-1])
+	color("green") translate([0,-0.5,0]) cube([120,1,1]);
+}
+
 
 
 translate([(74+18)*teeth_rad,0,0])
@@ -170,26 +216,21 @@ inner_drive();
 inner_shafts();
 
 // this is just to reverse the direction
-rotate([0,0,40])
-translate([(32+62)*teeth_rad,0,3*gsh+brace_height])
+// positioning it is tricky: it shouldn't impact the mars gear
+color("white")
+translate([(32+62)*teeth_rad,(32+32)*teeth_rad,3*gsh+brace_height])
 rotate([0,0,+time*(32/32)])
 outer_drive1();
 
-rotate([0,0,82])
+rotate([0,0,70])
 translate([(30+61)*teeth_rad,0,3*gsh+brace_height])
 rotate([0,0,-time*(32/32)*(16/50)])
 outer_drive2();
 
-/*
-%rotate([0,0,-120])
-translate([(40+60)*teeth_rad,0,3*gsh+brace_height])
-rotate([0,0,90])
-outer_reduction();
-*/
-
+planets();
 
 
 // fixed gear for the moon
-color("silver") translate([0,0,top_height]) gear(146, 3);
+color("silver") translate([0,0,moon_height]) gear(146, 3);
 
-translate([0,0,-shim_height]) shaft(50, 2.2); // sun shaft
+translate([0,0,-shim_height]) shaft(sun_height, 2.2); // sun shaft
