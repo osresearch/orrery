@@ -41,6 +41,17 @@ mercury_height = venus_height + shim_height + 1;
 sun_height = mercury_height + 10;
 
 
+// positions of the shafts -- very important for proper mesh!
+// this is dependent on the number of teeth in the gears.
+// the gear teeth are aligned on the y axis, so we have a rotation
+// parameter to compute how much we must rotate to bring the next tooth into line
+gear_slop = 0.2;
+inner_pos = [0,0];
+drive_pos = [pitch_radius(pitch,46)*2 + gear_slop,0];
+outer_drive1_pos = [pitch_radius(pitch,46)*2 + gear_slop, pitch_radius(pitch,32)*2 + gear_slop];
+
+
+
 // shaft diameters from mcmaster are telescoping,
 // not sure how well they spin relative to each other.
 // both metric (nice sizes) and imperial are available
@@ -65,12 +76,12 @@ shafts = [
 
 
 // Create an h mm high gear with n teeth, to fit on shaft number s
-module orrery_gear(n,s)
+module orrery_gear(n,s,spokes=3)
 {
 	render() difference()
 	{
-		//translate([0,0,gear_height/2]) gear(mm_per_tooth=pitch, number_of_teeth=n, hole_diameter=shafts[s], thickness=gear_height);
-		cylinder(r=n*teeth_rad, h=gear_height, $fn=n);
+		translate([0,0,gear_height/2]) gear(mm_per_tooth=pitch, number_of_teeth=n, hole_diameter=shafts[s], thickness=gear_height);
+		//cylinder(r=n*teeth_rad, h=gear_height, $fn=n);
 		translate([0,0,-1]) cylinder(r=n*teeth_rad - 2, h=gear_height+2, $fn=n);
 	}
 
@@ -79,9 +90,9 @@ module orrery_gear(n,s)
 		union()
 		{
 			cylinder(d=shafts[s]+2, h=gear_height, $fn=32);
-			for(i=[0:2])
-				rotate([0,0,i*360/3])
-				translate([-2,0,0])
+			for(i=[1:spokes])
+				rotate([0,0,90+i*360/spokes])
+				translate([-2,-gear_height/2,0])
 				cube([n*teeth_rad,gear_height,gear_height]);
 		}
 			
@@ -108,6 +119,8 @@ module shaft(h,s)
 
 
 // these are all on the same shaft
+// rotate so that they have a gap on the +X to line up with
+// the input drive mechanism
 module inner_drive()
 {
 	// mars
@@ -126,21 +139,24 @@ module inner_drive()
 
 	// make a fairly thick shaft that goes all the way through
 	// to the top brace
-	translate([0,0,-shim_height]) shaft2(top_height + brace_height, shafts[4], shafts[2]);
+	translate([0,0,-shim_height])
+	shaft2(top_height + brace_height, shafts[4], shafts[2]);
 }
 
 
+// these are all on co-centric shafts, 8 in total.
+// the gears are rotated to align with the input drive gear
 module inner_shafts()
 {
 	// saturn
-	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)+8.5])
+	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)])
 	color("green") translate([0,0,6*gsh+brace_height]) {
 		orrery_gear(76, 7);
 		shaft(saturn_height-6*gsh-brace_height,7);
 	}
 
 	// jupiter
-	rotate([0,0,time*(16/60)*(36/61)+7])
+	rotate([0,0,time*(16/60)*(36/61)])
 	color("purple") translate([0,0,5*gsh+brace_height]) {
 		orrery_gear(61, 6);
 		// add a extra shaft on the botomto ensure that the jupiter gear
@@ -150,18 +166,22 @@ module inner_shafts()
 
 
 	// mars
-	rotate([0,0,time*32/60+2.9])
+	rotate([0,0,time*32/60])
+	rotate([0,0,-90+360/60/2])
 	color("red") translate([0,0,3*gsh+brace_height]) {
 		orrery_gear(60,5);
 		shaft(mars_height-3*gsh-brace_height,5);
 	}
 
 	// fixed gear for the moon
-	color("silver") translate([0,0,3*gsh]) shaft(moon_height-3*gsh+gear_height,4);
+	color("silver")
+	translate([0,0,3*gsh])
+	shaft(moon_height-3*gsh+gear_height,4);
 
 
 	// earth
-	rotate([0,0,time*46/46+4])
+	rotate([0,0,time*46/46])
+	rotate([0,0,-90+360/46/2])
 	color("blue") translate([0,0,2*gsh]) {
 		orrery_gear(46,2);
 		shaft(earth_height-2*gsh,3);
@@ -169,13 +189,15 @@ module inner_shafts()
 
 	// venus
 	rotate([0,0,time*57/35])
+	rotate([0,0,-90+360/35/2])
 	color("pink") translate([0,0,1*gsh]) {
 		orrery_gear(35,2);
 		shaft(venus_height-1*gsh,2);
 	}
 
 	// mercury
-	rotate([0,0,time*74/18+10])
+	rotate([0,0,time*74/18])
+	rotate([0,0,-90+360/18/2])
 	color("gray") translate([0,0,0*gsh]) {
 		orrery_gear(18,1);
 		shaft(mercury_height-0*gsh,1);
@@ -203,9 +225,15 @@ module outer_drive2()
 }
 
 
+// This reverses the main drive and provides gear reduction
+// for the outer planet drive wheels.
 module outer_drive1()
 {
+	// leave this one non-rotated for easier math
 	translate([0,0,1*gsh]) orrery_gear(16,3);
+
+	// rotate to line up with the main drive wheel
+	rotate([0,0,180+360/32/2])
 	translate([0,0,0*gsh]) orrery_gear(32,3);
 
 
@@ -275,11 +303,14 @@ module planets()
 		}
 
 		// the gear and the shaft for the moon/earth combo
-		translate([(146+11)*teeth_rad,0,-gear_height-shim_height])
+		translate([pitch_radius(pitch,146+11)+gear_slop,0,-gear_height-shim_height])
 		{
 			rotate([0,0,-time*(146/11)])
 			{
+				// line up with the fixed moon gear
+				rotate([0,0,+90+360/11/2])
 				orrery_gear(11,0);
+
 				shaft(10,0);
 				translate([0,0,10]) sphere(r=4, $fn=32);
 				translate([0,3,10]) cube([1,6,1], center=true);
@@ -357,8 +388,9 @@ module planets()
 
 
 color("deepskyblue")
-translate([(74+18)*teeth_rad,0,0])
+translate([drive_pos[0], drive_pos[1]])
 rotate([0,0,-time])
+rotate([0,0,90]) // position each gear with a tooth facing -X
 inner_drive();
 
 inner_shafts();
@@ -366,8 +398,8 @@ inner_shafts();
 // this is just to reverse the direction
 // positioning it is tricky: it shouldn't impact the mars gear
 color("white")
-translate([(32+62)*teeth_rad,(32+32)*teeth_rad,3*gsh+brace_height])
-rotate([0,0,+time*(32/32)+2])
+translate([outer_drive1_pos[0], outer_drive1_pos[1], 3*gsh+brace_height])
+rotate([0,0,+time*(32/32)])
 outer_drive1();
 
 color("orange")
@@ -379,7 +411,11 @@ outer_drive2();
 planets();
 
 // fixed gear for the moon, on a size-4 shaft
-color("silver") translate([0,0,moon_height]) orrery_gear(146, 4);
+// rotate to put a fixed tooth on the positive X axis
+color("silver")
+translate([0,0,moon_height])
+rotate([0,0,-90])
+orrery_gear(146, 4, 7);
 
 // sun shaft and globe
 translate([0,0,-1]) {
@@ -406,14 +442,14 @@ render() difference()
 		translate([0,0,0])
 		cylinder(r=6,h=brace_height-shim_height);
 
-		translate([(74+18)*teeth_rad,0,0])
+		translate([drive_pos[0], drive_pos[1],0])
 		cylinder(r=6,h=brace_height-shim_height);
 
 		rotate([0,0,70])
 		translate([(30+61)*teeth_rad,0,0])
 		cylinder(r=6,h=brace_height-shim_height);
 
-		translate([(32+62)*teeth_rad,(32+32)*teeth_rad,0])
+		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
 		cylinder(r=6,h=brace_height-shim_height);
 
 		translate([38,10,0]) cylinder(r=2,h=brace_height-shim_height);
@@ -423,14 +459,14 @@ render() difference()
 
 	// cut shaftways for the three other than the center one
 	// that holds the moon gear fixd.
-	translate([(74+18)*teeth_rad,0,-1])
+	translate([drive_pos[0], drive_pos[1], -1])
 	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
 
 	rotate([0,0,70])
 	translate([(30+61)*teeth_rad,0,-1])
 	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
 
-	translate([(32+62)*teeth_rad,(32+32)*teeth_rad,-1])
+	translate([outer_drive1_pos[0], outer_drive1_pos[1], -1])
 	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
 
 	// clear out some mass
