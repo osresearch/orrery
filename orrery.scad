@@ -20,6 +20,10 @@ shim_height = 0.5;
 // thickness of a gear + shim
 gsh = gear_height + shim_height;
 
+// how much space should we leave between the gear teeth
+// this helps with printability
+gear_slop = 0.2;
+
 // conversion from N teeth to radius
 teeth_rad = pitch / (2*PI);
 
@@ -63,7 +67,6 @@ function gear_coord(g0, g1, t0, t1) =
 // this is dependent on the number of teeth in the gears.
 // the gear teeth are aligned on the y axis, so we have a rotation
 // parameter to compute how much we must rotate to bring the next tooth into line
-gear_slop = 0.2;
 inner_pos = [0,0,0];
 drive_pos = [pitch_radius(pitch,46)*2 + gear_slop,0];
 outer_drive1_pos = [pitch_radius(pitch,46)*2 + gear_slop, pitch_radius(pitch,32)*2 + gear_slop];
@@ -468,8 +471,7 @@ render() difference()
 		translate([drive_pos[0], drive_pos[1],0])
 		cylinder(r=6,h=brace_height-shim_height);
 
-		rotate([0,0,70])
-		translate([(30+61)*teeth_rad,0,0])
+		translate([outer_drive2_pos[0], outer_drive2_pos[1], 0])
 		cylinder(r=6,h=brace_height-shim_height);
 
 		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
@@ -509,6 +511,7 @@ translate([0,0,top_height]) render() difference()
 }
 
 // cylinders to hold the plates together
+// hand aligned to clear the gears
 translate([38,10,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
 translate([-10,25,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
 translate([25,-12,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
