@@ -15,7 +15,7 @@ gear_height = 2;
 brace_height = 3;
 
 // thickness of the shim washers
-shim_height = 0.25;
+shim_height = 0.5;
 
 // thickness of a gear + shim
 gsh = gear_height + shim_height;
@@ -381,7 +381,7 @@ planets();
 // fixed gear for the moon, on a size-4 shaft
 color("silver") translate([0,0,moon_height]) orrery_gear(146, 4);
 
-// sun shaft
+// sun shaft and globe
 translate([0,0,-1]) {
 	shaft(sun_height-8, 0);
 
@@ -389,7 +389,7 @@ translate([0,0,-1]) {
 	translate([0,0,venus_height+2+2*shim_height])
 	shaft2(1 - shim_height, shafts[1], shaft[0]);
 	translate([0,0,sun_height-0.8]) render() difference() {
-		sphere(r=8, $fn=64);
+		sphere(r=8, $fn=32);
 		sphere(r=7.2, $fn=32);
 		rotate([-140,0,0]) cylinder(r=1, h=10, $fn=16);
 	}
