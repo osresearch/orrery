@@ -41,15 +41,33 @@ mercury_height = venus_height + shim_height + 1;
 sun_height = mercury_height + 10;
 
 
+// compute the mesh position for a third gear given the
+// xy coordinates of the first two gears and their various lengths
+// this uses the law of cosines to get the angle between the two
+// fixed gears
+function gear_coord(g0, g1, t0, t1) =
+	let(a = pitch_radius(pitch, t0) + gear_slop)
+	let(b = pitch_radius(pitch, t1) + gear_slop)
+	let(dx = g1[0] - g0[0])
+	let(dy = g1[1] - g0[1])
+	let(c = sqrt(dx*dx+dy*dy))
+	let(angle1 = acos((a*a + c*c - b*b) / (2*a*c)))
+	let(angle2 = atan2(dy, dx))
+	[
+		g0[0] + a * cos(angle1+angle2),
+		g0[1] + a * sin(angle1+angle2),
+		0,
+	];
+
 // positions of the shafts -- very important for proper mesh!
 // this is dependent on the number of teeth in the gears.
 // the gear teeth are aligned on the y axis, so we have a rotation
 // parameter to compute how much we must rotate to bring the next tooth into line
 gear_slop = 0.2;
-inner_pos = [0,0];
+inner_pos = [0,0,0];
 drive_pos = [pitch_radius(pitch,46)*2 + gear_slop,0];
 outer_drive1_pos = [pitch_radius(pitch,46)*2 + gear_slop, pitch_radius(pitch,32)*2 + gear_slop];
-
+outer_drive2_pos = gear_coord(inner_pos, outer_drive1_pos, 15+76, 50+16);
 
 
 // shaft diameters from mcmaster are telescoping,
@@ -146,10 +164,12 @@ module inner_drive()
 
 // these are all on co-centric shafts, 8 in total.
 // the gears are rotated to align with the input drive gear
+// the outer planets are hand aligned
 module inner_shafts()
 {
 	// saturn
 	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)])
+	rotate([0,0,3.8])
 	color("green") translate([0,0,6*gsh+brace_height]) {
 		orrery_gear(76, 7);
 		shaft(saturn_height-6*gsh-brace_height,7);
@@ -157,6 +177,7 @@ module inner_shafts()
 
 	// jupiter
 	rotate([0,0,time*(16/60)*(36/61)])
+	rotate([0,0,5.0])
 	color("purple") translate([0,0,5*gsh+brace_height]) {
 		orrery_gear(61, 6);
 		// add a extra shaft on the botomto ensure that the jupiter gear
@@ -294,11 +315,11 @@ module planets()
 
 		shaft2(1, shafts[4], shafts[3]);
 
-		translate([(146+11)*teeth_rad,0,0])
+		translate([pitch_radius(pitch,146+11)+gear_slop,0,0])
 		render() difference()
 		{
 			cylinder(h=1, d=4, $fn=64);
-			cylinder(h=1, d=shafts[0]+0.25, $fn=64);
+			cylinder(h=1, d=shafts[0]+0.5, $fn=64);
 		}
 		}
 
@@ -402,10 +423,12 @@ translate([outer_drive1_pos[0], outer_drive1_pos[1], 3*gsh+brace_height])
 rotate([0,0,+time*(32/32)])
 outer_drive1();
 
+// the rotation angle is a hand-aligned hack
 color("orange")
-rotate([0,0,70])
-translate([(30+61)*teeth_rad,0,3*gsh+brace_height])
+//translate([(30+61)*teeth_rad,0,3*gsh+brace_height])
+translate([outer_drive2_pos[0], outer_drive2_pos[1], 3*gsh+brace_height])
 rotate([0,0,-time*(32/32)*(16/50)+5])
+rotate([0,0,5.5])
 outer_drive2();
 
 planets();
@@ -462,8 +485,7 @@ render() difference()
 	translate([drive_pos[0], drive_pos[1], -1])
 	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
 
-	rotate([0,0,70])
-	translate([(30+61)*teeth_rad,0,-1])
+	translate([outer_drive2_pos[0], outer_drive2_pos[1], -1])
 	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
 
 	translate([outer_drive1_pos[0], outer_drive1_pos[1], -1])
