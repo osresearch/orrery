@@ -69,8 +69,8 @@ function gear_coord(g0, g1, t0, t1) =
 // parameter to compute how much we must rotate to bring the next tooth into line
 inner_pos = [0,0,0];
 drive_pos = [pitch_radius(pitch,46)*2 + gear_slop,0];
-outer_drive1_pos = [pitch_radius(pitch,46)*2 + gear_slop, pitch_radius(pitch,32)*2 + gear_slop];
-outer_drive2_pos = gear_coord(inner_pos, outer_drive1_pos, 15+76, 50+16);
+outer_drive1_pos = [pitch_radius(pitch,46)*2 + gear_slop, pitch_radius(pitch,16+32) + gear_slop];
+outer_drive2_pos = gear_coord(inner_pos, outer_drive1_pos, 15+76, 56+16);
 
 
 // shaft diameters from mcmaster are telescoping,
@@ -144,6 +144,11 @@ module shaft(h,s)
 // the input drive mechanism
 module inner_drive()
 {
+	// output to the outer planets
+	translate([0,0,5*gsh+brace_height]) orrery_gear(16,4);
+
+	// skip a space
+
 	// mars
 	translate([0,0,3*gsh+brace_height]) orrery_gear(32,4);
 
@@ -172,7 +177,7 @@ module inner_shafts()
 {
 	// saturn
 	rotate([0,0,time*(16/50)*(15/76)])
-	rotate([0,0,3.8])
+	rotate([0,0,3.4])
 	color("green") translate([0,0,6*gsh+brace_height]) {
 		orrery_gear(76, 7);
 		shaft(saturn_height-6*gsh-brace_height,7);
@@ -180,7 +185,7 @@ module inner_shafts()
 
 	// jupiter
 	rotate([0,0,time*(16/50)*(36/61)])
-	rotate([0,0,5.0])
+	rotate([0,0,5.3])
 	color("purple") translate([0,0,5*gsh+brace_height]) {
 		orrery_gear(61, 6);
 		// add a extra shaft on the botomto ensure that the jupiter gear
@@ -237,8 +242,8 @@ module outer_drive2()
 	// jupiter output
 	translate([0,0,2*gsh]) orrery_gear(30,3);
 
-	// jupiter input
-	translate([0,0,1*gsh]) orrery_gear(50,3);
+	// reverser input
+	translate([0,0,1*gsh]) orrery_gear(56,3);
 
 	translate([0,0,-brace_height])
 	shaft2(4*gsh+brace_height*2-shim_height, shafts[4], shafts[2]);
@@ -258,7 +263,7 @@ module outer_drive1()
 
 	// rotate to line up with the main drive wheel
 	rotate([0,0,180+360/32/2])
-	translate([0,0,0*gsh]) orrery_gear(32,3);
+	translate([0,0,2*gsh]) orrery_gear(32,3);
 
 
 	translate([0,0,-brace_height])
@@ -428,9 +433,12 @@ render() difference()
 		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
 		cylinder(r=6,h=brace_height-shim_height);
 
-		translate([39,11,0]) cylinder(r=2,h=brace_height-shim_height);
+		translate([42,11,0]) cylinder(r=2,h=brace_height-shim_height);
 		translate([-10,26,0]) cylinder(r=2, h=brace_height-shim_height);
 		translate([25,-13,0]) cylinder(r=2, h=brace_height-shim_height);
+
+rotate([0,0,120-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
+rotate([0,0,-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 	}
 
 	// cut shaftways for the three other than the center one
@@ -446,12 +454,15 @@ render() difference()
 
 	// clear out some mass
 	translate([15,10,-1])
-	cylinder(d=25, h=brace_height+2);
+	cylinder(d=23, h=brace_height+2);
+
+	translate([-3,27,-1])
+	cylinder(d=14, h=brace_height+2);
 }
 }
 
 
-module orrery()
+module make_gears()
 {
 color("deepskyblue")
 translate([drive_pos[0], drive_pos[1]])
@@ -473,9 +484,13 @@ color("orange")
 //translate([(30+61)*teeth_rad,0,3*gsh+brace_height])
 translate([outer_drive2_pos[0], outer_drive2_pos[1], 3*gsh+brace_height])
 rotate([0,0,-time*(32/32)*(16/50)+5])
-rotate([0,0,5.5])
+rotate([0,0,3.0])
 outer_drive2();
+}
 
+module orrery()
+{
+make_gears();
 planets();
 
 // fixed gear for the moon, on a size-4 shaft
@@ -514,8 +529,10 @@ translate([0,0,top_height]) render() difference()
 
 // cylinders to hold the plates together
 // hand aligned to clear the gears
-translate([39,11,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
-translate([-10,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+translate([42,11,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+//translate([-12,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+rotate([0,0,120-15]) translate([40,0,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+rotate([0,0,-15]) translate([40,0,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 translate([25,-13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 
 }
@@ -523,3 +540,5 @@ translate([25,-13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=
 
 //rotate([0,0,-time*46/46])
 orrery();
+
+//make_gears();
