@@ -3,7 +3,7 @@
  */
 include <publicDomainGearV1.1.scad>
 
-time = $t*3600;
+time = $t*720;
 
 // gear pitch in mm
 pitch = 2;
@@ -171,7 +171,7 @@ module inner_drive()
 module inner_shafts()
 {
 	// saturn
-	rotate([0,0,time*(16/60)*(36/61)*(61/30)*(15/76)])
+	rotate([0,0,time*(16/50)*(15/76)])
 	rotate([0,0,3.8])
 	color("green") translate([0,0,6*gsh+brace_height]) {
 		orrery_gear(76, 7);
@@ -179,7 +179,7 @@ module inner_shafts()
 	}
 
 	// jupiter
-	rotate([0,0,time*(16/60)*(36/61)])
+	rotate([0,0,time*(16/50)*(36/61)])
 	rotate([0,0,5.0])
 	color("purple") translate([0,0,5*gsh+brace_height]) {
 		orrery_gear(61, 6);
@@ -410,7 +410,49 @@ module planets()
 }
 
 
+module brace_plate()
+{
+render() difference()
+{
+	hull()
+	{
+		translate([0,0,0])
+		cylinder(r=6,h=brace_height-shim_height);
 
+		translate([drive_pos[0], drive_pos[1],0])
+		cylinder(r=6,h=brace_height-shim_height);
+
+		translate([outer_drive2_pos[0], outer_drive2_pos[1], 0])
+		cylinder(r=6,h=brace_height-shim_height);
+
+		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
+		cylinder(r=6,h=brace_height-shim_height);
+
+		translate([39,11,0]) cylinder(r=2,h=brace_height-shim_height);
+		translate([-10,26,0]) cylinder(r=2, h=brace_height-shim_height);
+		translate([25,-13,0]) cylinder(r=2, h=brace_height-shim_height);
+	}
+
+	// cut shaftways for the three other than the center one
+	// that holds the moon gear fixd.
+	translate([drive_pos[0], drive_pos[1], -1])
+	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
+
+	translate([outer_drive2_pos[0], outer_drive2_pos[1], -1])
+	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
+
+	translate([outer_drive1_pos[0], outer_drive1_pos[1], -1])
+	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
+
+	// clear out some mass
+	translate([15,10,-1])
+	cylinder(d=25, h=brace_height+2);
+}
+}
+
+
+module orrery()
+{
 color("deepskyblue")
 translate([drive_pos[0], drive_pos[1]])
 rotate([0,0,-time])
@@ -441,7 +483,7 @@ planets();
 color("silver")
 translate([0,0,moon_height])
 rotate([0,0,-90])
-orrery_gear(146, 4, 7);
+orrery_gear(146, 4);
 
 // sun shaft and globe
 translate([0,0,-1]) {
@@ -459,46 +501,6 @@ translate([0,0,-1]) {
 }
 
 
-module brace_plate()
-{
-render() difference()
-{
-	hull()
-	{
-		translate([0,0,0])
-		cylinder(r=6,h=brace_height-shim_height);
-
-		translate([drive_pos[0], drive_pos[1],0])
-		cylinder(r=6,h=brace_height-shim_height);
-
-		translate([outer_drive2_pos[0], outer_drive2_pos[1], 0])
-		cylinder(r=6,h=brace_height-shim_height);
-
-		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
-		cylinder(r=6,h=brace_height-shim_height);
-
-		translate([38,10,0]) cylinder(r=2,h=brace_height-shim_height);
-		translate([-10,25,0]) cylinder(r=2, h=brace_height-shim_height);
-		translate([25,-12,0]) cylinder(r=2, h=brace_height-shim_height);
-	}
-
-	// cut shaftways for the three other than the center one
-	// that holds the moon gear fixd.
-	translate([drive_pos[0], drive_pos[1], -1])
-	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
-
-	translate([outer_drive2_pos[0], outer_drive2_pos[1], -1])
-	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
-
-	translate([outer_drive1_pos[0], outer_drive1_pos[1], -1])
-	cylinder(d=shafts[4]+0.6, h=brace_height+2, $fn=64);
-
-	// clear out some mass
-	translate([15,10,-1])
-	cylinder(d=25, h=brace_height+2);
-}
-}
-
 
 // mid-plane brace
 translate([0,0,3*gsh]) brace_plate();
@@ -512,7 +514,12 @@ translate([0,0,top_height]) render() difference()
 
 // cylinders to hold the plates together
 // hand aligned to clear the gears
-translate([38,10,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
-translate([-10,25,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
-translate([25,-12,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=16);
+translate([39,11,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+translate([-10,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+translate([25,-13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 
+}
+
+
+//rotate([0,0,-time*46/46])
+orrery();
