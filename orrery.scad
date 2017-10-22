@@ -301,53 +301,69 @@ module planets()
 	rotate([0,0,time*74/18])
 	translate([0,0,mercury_height-1])
 	{
-		translate([shafts[1]/2-0.25,-0.5,0])
+		render() difference()
 		{
-			cube([20,1,1]);
-			translate([20,+0.5,0])
-			cylinder(d=1, h=6, $fn=32);
+			hull() {
+				translate([20,0,0]) cylinder(d=1, h=1);
+				cylinder(d=shafts[2], h=1, $fn=64);
+			}
+			cylinder(d=shafts[0]+shaft_clearance, $fn=64);
+		}
 
-			translate([20,+0.5,6])
+		translate([20,0,0])
+		{
+			cylinder(d=1, h=6, $fn=32);
+			translate([0,0,6])
 			sphere(d=2, $fn=32);
 		}
-		shaft2(1, shafts[2], shafts[1]);
 	}
 
 	color("pink")
 	rotate([0,0,time*57/35])
 	translate([0,0,venus_height-1])
 	{
-		translate([shafts[2]/2-0.25,-0.5,0])
+		render() difference()
 		{
-			cube([35,1,1]);
-			translate([35,+0.5,0])
-			cylinder(d=1, h=7, $fn=32);
-
-			translate([35,+0.5,7])
-			sphere(d=4, $fn=32);
+			hull() {
+				translate([35,0,0]) cylinder(d=1, h=1);
+				cylinder(d=shafts[3], h=1, $fn=64);
+			}
+			cylinder(d=shafts[1]+shaft_clearance, $fn=64);
 		}
 
-
-		shaft2(1, shafts[3], shafts[2]);
+		translate([35,0,0])
+		{
+			cylinder(d=1, h=7, $fn=32);
+			translate([0,0,7])
+			sphere(d=4, $fn=32);
+		}
 	}
 
 	// make the earth rod along with its rotating gear
 	rotate([0,0,time*46/46])
 	translate([0,0,earth_height-1])
 	{
-		color("blue") {
 		// the rod and circle at the end of it
-		translate([shafts[3]/2-0.25,-1,0])
-		cube([(146+11)*teeth_rad-shafts[3]/2-shafts[0]/2-0.25,2,1]);
-
-		shaft2(1, shafts[4], shafts[3]);
-
-		translate([pitch_radius(pitch,146+11)+gear_slop,0,0])
+		color("blue")
 		render() difference()
 		{
-			cylinder(h=1, d=4, $fn=64);
-			cylinder(h=1, d=shafts[0]+0.5, $fn=64);
-		}
+			hull() {
+				cylinder(d=shafts[4], h=1, $fn=64);
+				translate([pitch_radius(pitch,146+11)+gear_slop,0,0])
+				cylinder(d=shafts[1], h=1, $fn=64);
+			}
+
+			// the input shaft
+			cylinder(d=shafts[2]+shaft_clearance, h=1, $fn=64);
+
+			// the earth vertical shaft
+			translate([pitch_radius(pitch,146+11)+gear_slop,0,0])
+			cylinder(d=shafts[0]+shaft_clearance, h=1, $fn=64);
+
+			hull() {
+				translate([shafts[7]*.75,0,0]) cylinder(d=6, h=2);
+				translate([45,0,0]) cylinder(d=1, h=2);
+			}
 		}
 
 		// the gear and the shaft for the moon/earth combo
@@ -375,44 +391,81 @@ module planets()
 	rotate([0,0,time*(32/60)])
 	translate([0,0,mars_height-1])
 	{
-		translate([shafts[5]/2-0.25,0,0])
+		render() difference()
 		{
-			translate([0,-1,0]) cube([62,2,1]);
-			translate([62,0,0]) cylinder(d1=2, d2=1, h=10, $fn=32);
-			translate([62,0,10]) sphere(r=3, $fn=32);
+			hull() {
+				translate([65,0,0]) cylinder(d=1, h=1);
+				cylinder(d=shafts[6], h=1, $fn=64);
+			}
+			cylinder(d=shafts[4]+shaft_clearance, $fn=64);
+
+			hull() {
+				translate([shafts[7]*.75,0,0]) cylinder(d=8, h=2);
+				translate([55,0,0]) cylinder(d=0.5, h=2);
+			}
 		}
-		shaft2(1, shafts[7], shafts[5]);
+
+		translate([65,0,0])
+		{
+			cylinder(d=1, h=10, $fn=32);
+			translate([0,0,10])
+			sphere(d=6, $fn=32);
+		}
 	}
 
 	color("purple")
 	rotate([0,0,time*(16/32)*(16/56)*(36/61)])
 	translate([0,0,jupiter_height-1])
 	{
-		translate([shafts[6]/2-0.25,0,0])
+		render() difference()
 		{
-			translate([0,-1,0]) cube([80,2,1]);
-			translate([80,0,0]) cylinder(d1=2, d2=1, h=11+8, $fn=32);
+			hull() {
+				translate([85,0,0]) cylinder(d=2, h=1);
+				cylinder(d=shafts[7], h=1, $fn=64);
+			}
+			cylinder(d=shafts[5]+shaft_clearance, $fn=64);
+
+			hull() {
+				translate([shafts[7]*.75,0,0]) cylinder(d=10, h=2);
+				translate([75,0,0]) cylinder(d=1, h=2);
+			}
+		}
+
+		translate([85,0,0])
+		{
+			cylinder(d1=2, d2=1, h=11+8, $fn=32);
 
 			// make a hollow sphere
-			translate([80,0,11]) render() difference() {
+			translate([0,0,11]) render() difference() {
 				sphere(r=8, $fn=32);
 				sphere(r=7.2, $fn=32);
 				rotate([-140,0,0]) cylinder(r=1, h=10, $fn=32);
 			}
 		}
-			
-		shaft2(1,shafts[7], shafts[6]);
 	}
 
 	color("green")
 	rotate([0,0,time*(16/32)*(16/56)*(15/76)])
 	translate([0,0,saturn_height-1])
 	{
-		translate([shafts[7]/2-0.25,0,0])
+		render() difference()
 		{
-			translate([0,-1,0]) cube([100,2,1]);
-			translate([100,0,0]) cylinder(d1=2, d2=1, h=12+6, $fn=32);
-			translate([100,0,12]) {
+			hull() {
+				translate([110,0,0]) cylinder(d=2, h=1);
+				cylinder(d=shafts[7], h=1, $fn=64);
+			}
+			cylinder(d=shafts[6]+shaft_clearance, $fn=64);
+
+			hull() {
+				translate([shafts[7]*.75,0,0]) cylinder(d=10, h=2);
+				translate([100,0,0]) cylinder(d=1, h=2);
+			}
+		}
+
+		translate([110,0,0])
+		{
+			cylinder(d1=2, d2=1, h=12+6, $fn=32);
+			translate([0,0,12]) {
 				render() difference() {
 					sphere(r=6,$fn=32);
 					sphere(r=5.2,$fn=32);
@@ -428,8 +481,6 @@ module planets()
 				}
 			}
 		}
-
-		shaft(1,7);
 	}
 }
 
