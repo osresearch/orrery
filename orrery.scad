@@ -19,17 +19,17 @@ gear_height = 2;
 brace_height = 3;
 
 // thickness of the shim washers
-shim_height = 0.5;
+shim_height = 0.9;
 
 // thickness of a gear + shim
 gsh = gear_height + shim_height;
 
 // how much space should we leave between the gear teeth
 // this helps with printability
-gear_slop = 0.75;
+gear_slop = 1.75/2;
 
 // how much space should be between shafts (in diameter)?
-shaft_clearance = 1.0;
+shaft_clearance = 1.75;
 
 // conversion from N teeth to radius
 teeth_rad = pitch / (2*PI);
@@ -382,7 +382,7 @@ module planets()
 				translate([0,6,10]) sphere(r=1, $fn=32);
 
 				// add a small keeper to prevent it from slipping
-				translate([0,0,2*gsh + 0*shim_height]) cylinder(r=2, h=shim_height*2, $fn=32);
+				translate([0,0,2*gsh + 0*shim_height]) cylinder(d=6, h=shim_height*2, $fn=32);
 				//translate([5,0,10]) sphere(r=1);
 			}
 		}
@@ -508,14 +508,16 @@ render() difference()
 		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
 		cylinder(r=6,h=brace_height-shim_height);
 
+		translate([36,-19,0]) cylinder(r=3, h=brace_height-shim_height, $fn=32);
+/*
 		translate([60,13,0]) cylinder(r=2,h=brace_height-shim_height);
 		translate([-10,26,0]) cylinder(r=2, h=brace_height-shim_height);
 		translate([25,-13,0]) cylinder(r=2, h=brace_height-shim_height);
-translate([20,-33,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 
 rotate([0,0,115]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 rotate([0,0,43]) translate([62,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 rotate([0,0,-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
+*/
 	}
 
 	// cut shaftways for the three other than the center one
@@ -534,11 +536,13 @@ rotate([0,0,-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, 
 	translate([22,20,-1])
 	cylinder(d=30, h=brace_height+2);
 
+/*
 	translate([-3,27,-1])
 	cylinder(d=14, h=brace_height+2);
 
 	translate([22,-13,-1])
 	cylinder(d=24, h=brace_height+2);
+*/
 }
 }
 
@@ -614,14 +618,29 @@ translate([0,0,top_height]) render() difference()
 }
 
 // bottom plate, with an opening for the sun wires
-translate([0,0,-brace_height]) render() difference()
+translate([0,0,-brace_height-shim_height])
+render() difference()
 {
-	brace_plate();
-	translate([0,0,-1]) cylinder(d=2, h=brace_height+2);
+	hull() {
+		cylinder(d=20, h=brace_height);
+		translate([drive_pos[0], drive_pos[1], 0]) cylinder(d=shafts[4], h=brace_height);
+	}
+	translate([0,0,-1]) {
+		cylinder(d=2, h=brace_height+2);
+		translate([drive_pos[0], drive_pos[1], 0]) cylinder(d=shafts[2]+shaft_clearance, h=brace_height+2, $fn=32);
+
+		hull() {
+			translate([drive_pos[0]*0.25, drive_pos[1]*0.25,0]) cylinder(d=12, h=brace_height+2);
+			translate([drive_pos[0]*0.70, drive_pos[1]*0.70,0]) cylinder(d=10, h=brace_height+2);
+		}
+	}
 }
 
 // cylinders to hold the plates together
 // hand aligned to clear the gears
+	translate([36,-19,3*gsh])
+	cylinder(r=3, h=4*gsh+2*brace_height-shim_height, $fn=32);
+/*
 translate([60,13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 //translate([-12,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 
@@ -631,6 +650,7 @@ rotate([0,0,43]) translate([62,0,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_h
 translate([20,-33,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_height-shim_height, $fn=32);
 
 //rotate([0,0,-15]) translate([40,0,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+*/
 
 
 }
