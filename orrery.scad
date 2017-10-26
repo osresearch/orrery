@@ -103,7 +103,7 @@ shafts = [
 
 
 // Create an h mm high gear with n teeth, to fit on shaft number s
-module orrery_gear(n,s,spokes=3)
+module orrery_gear(n,s,spokes=3,mm_per_tooth=pitch)
 {
 	render() difference()
 	{
@@ -111,18 +111,18 @@ module orrery_gear(n,s,spokes=3)
 		{
 			translate([0,0,gear_height/2])
 			gear(
-				mm_per_tooth=pitch,
+				mm_per_tooth=mm_per_tooth,
 				number_of_teeth=n,
 				hole_diameter=shafts[s],
 				thickness=gear_height
 			);
 		} else {
 			// approximate the gears with cylinders
-			cylinder(r=pitch_radius(pitch,n), h=gear_height, $fn=n);
+			cylinder(r=pitch_radius(mm_per_tooth,n), h=gear_height, $fn=n);
 		}
 
 		// cut out the center of the gear
-		translate([0,0,-1]) cylinder(r=pitch_radius(pitch,n) - 2, h=gear_height+2, $fn=n);
+		translate([0,0,-1]) cylinder(r=pitch_radius(mm_per_tooth,n) - 2, h=gear_height+2, $fn=n);
 	}
 
 	render() difference()
@@ -154,7 +154,7 @@ module shaft2(h,od,id)
 // create a standard hollow shaft
 module shaft(h,s)
 {
-	shaft2(h, shafts[s], s > 0 ? shafts[s-1] + shaft_clearance : 0);
+	shaft2(h, shafts[s], s > 0 ? shafts[s-1] + shaft_clearance : 1);
 }
 
 
@@ -184,8 +184,8 @@ module inner_drive()
 
 	// make a fairly thick shaft that goes all the way through
 	// to the top brace
-	translate([0,0,-shim_height])
-	shaft2(top_height + brace_height, shafts[2], shafts[0]);
+	translate([0,0,-brace_height])
+	shaft2(top_height + 2 * brace_height - shim_height, shafts[2], shafts[0]);
 }
 
 
@@ -381,7 +381,7 @@ module planets()
 				translate([0,6,10]) sphere(r=1, $fn=32);
 
 				// add a small keeper to prevent it from slipping
-				translate([0,0,gsh + 1 + shim_height]) cylinder(r=2, h=shim_height, $fn=32);
+				translate([0,0,gsh + 1 + shim_height]) cylinder(r=2, h=shim_height*2, $fn=32);
 				//translate([5,0,10]) sphere(r=1);
 			}
 		}
@@ -508,6 +508,7 @@ render() difference()
 		translate([25,-13,0]) cylinder(r=2, h=brace_height-shim_height);
 
 rotate([0,0,120-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
+rotate([0,0,60-15]) translate([44,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 rotate([0,0,-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, $fn=32);
 	}
 
@@ -569,18 +570,19 @@ planets();
 
 // fixed gear for the moon, on a size-4 shaft
 // rotate to put a fixed tooth on the positive X axis
+// could do this at a different pitch to make it smaller
 color("silver")
 translate([0,0,moon_height])
 rotate([0,0,-90])
-orrery_gear(146, 4);
+orrery_gear(146, 4, 3, pitch);
 
 // sun shaft and globe
-translate([0,0,-1]) {
+translate([0,0,-2]) {
 	shaft(sun_height-8, 0);
 
-	shaft2(1 - shim_height, shafts[4], shaft[0]);
+	shaft2(2 - shim_height, shafts[4], shafts[0]);
 	translate([0,0,venus_height+2+2*shim_height])
-	shaft2(1 - shim_height, shafts[1], shaft[0]);
+	shaft2(1 - shim_height, shafts[1], shafts[0]);
 	translate([0,0,sun_height-0.8]) render() difference() {
 		sphere(r=8, $fn=32);
 		sphere(r=7.2, $fn=32);
@@ -605,12 +607,24 @@ translate([0,0,top_height]) render() difference()
 	translate([0,0,-1]) cylinder(d=shafts[7]+shaft_clearance, h=brace_height+2, $fn=64);
 }
 
+// bottom plate, with an opening for the sun wires
+translate([0,0,-brace_height]) render() difference()
+{
+	brace_plate();
+	translate([0,0,-1]) cylinder(d=2, h=brace_height+2);
+}
+
 // cylinders to hold the plates together
 // hand aligned to clear the gears
 translate([42,11,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 //translate([-12,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
-rotate([0,0,120-15]) translate([40,0,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+
+// all the way from bottom to top plate
+rotate([0,0,120-15]) translate([40,0,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_height-shim_height, $fn=32);
+rotate([0,0,60-15]) translate([44,0,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_height-shim_height, $fn=32);
+
 rotate([0,0,-15]) translate([40,0,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+
 translate([25,-13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 
 }
