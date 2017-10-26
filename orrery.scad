@@ -305,7 +305,7 @@ module planets()
 		render() difference()
 		{
 			hull() {
-				translate([20,0,0]) cylinder(d=1, h=1);
+				translate([20,0,0]) cylinder(d=2, h=1);
 				cylinder(d=shafts[2], h=1, $fn=64);
 			}
 			cylinder(d=shafts[0]+shaft_clearance, $fn=64);
@@ -313,8 +313,8 @@ module planets()
 
 		translate([20,0,0])
 		{
-			cylinder(d=1, h=6, $fn=32);
-			translate([0,0,6])
+			cylinder(d2=1, d1=2, h=4, $fn=32);
+			translate([0,0,4])
 			sphere(d=2, $fn=32);
 		}
 	}
@@ -334,8 +334,8 @@ module planets()
 
 		translate([35,0,0])
 		{
-			cylinder(d2=1, d1=2, h=7, $fn=32);
-			translate([0,0,7])
+			cylinder(d2=1, d1=2, h=5, $fn=32);
+			translate([0,0,5])
 			sphere(d=4, $fn=32);
 		}
 	}
@@ -382,7 +382,7 @@ module planets()
 				translate([0,6,10]) sphere(r=1, $fn=32);
 
 				// add a small keeper to prevent it from slipping
-				translate([0,0,gsh + 1 + shim_height]) cylinder(r=2, h=shim_height*2, $fn=32);
+				translate([0,0,2*gsh + 0*shim_height]) cylinder(r=2, h=shim_height*2, $fn=32);
 				//translate([5,0,10]) sphere(r=1);
 			}
 		}
@@ -395,10 +395,11 @@ module planets()
 		render() difference()
 		{
 			hull() {
-				translate([65,0,0]) cylinder(d=1, h=gear_height);
+				translate([65,0,0]) cylinder(d=2, h=gear_height);
 				cylinder(d=shafts[6], h=gear_height, $fn=64);
 			}
-			cylinder(d=shafts[4]+shaft_clearance, $fn=64);
+			translate([0,0,-1])
+			cylinder(d=shafts[4]+shaft_clearance, $fn=64, h=gear_height+2);
 
 			hull() {
 				translate([shafts[7]*.75,0,0]) cylinder(d=8, h=gear_height);
@@ -408,8 +409,8 @@ module planets()
 
 		translate([65,0,0])
 		{
-			cylinder(d=1, h=10, $fn=32);
-			translate([0,0,10])
+			cylinder(d2=1, d1=2, h=12, $fn=32);
+			translate([0,0,12])
 			sphere(d=6, $fn=32);
 		}
 	}
@@ -424,7 +425,8 @@ module planets()
 				translate([85,0,0]) cylinder(d=2, h=gear_height);
 				cylinder(d=shafts[7], h=gear_height, $fn=64);
 			}
-			cylinder(d=shafts[5]+shaft_clearance, $fn=64);
+			translate([0,0,-1])
+			cylinder(d=shafts[5]+shaft_clearance, $fn=64, h=gear_height+2);
 
 			hull() {
 				translate([shafts[7]*.75,0,0]) cylinder(d=10, h=gear_height);
@@ -434,10 +436,10 @@ module planets()
 
 		translate([85,0,0])
 		{
-			cylinder(d1=2, d2=1, h=11+8, $fn=32);
+			cylinder(d1=2, d2=1, h=15+8, $fn=32);
 
 			// make a hollow sphere
-			translate([0,0,11]) render() difference() {
+			translate([0,0,15]) render() difference() {
 				sphere(r=8, $fn=32);
 				sphere(r=7.2, $fn=32);
 				rotate([-140,0,0]) cylinder(r=1, h=10, $fn=32);
@@ -455,7 +457,9 @@ module planets()
 				translate([110,0,0]) cylinder(d=2, h=gear_height);
 				cylinder(d=shafts[7], h=gear_height, $fn=64);
 			}
-			cylinder(d=shafts[6]+shaft_clearance, $fn=64);
+
+			translate([0,0,-1])
+			cylinder(d=shafts[6]+shaft_clearance, $fn=64, h=gear_height+2);
 
 			hull() {
 				translate([shafts[7]*.75,0,0]) cylinder(d=10, h=gear_height);
@@ -465,8 +469,8 @@ module planets()
 
 		translate([110,0,0])
 		{
-			cylinder(d1=2, d2=1, h=12+6, $fn=32);
-			translate([0,0,12]) {
+			cylinder(d1=2, d2=1, h=17+6, $fn=32);
+			translate([0,0,17]) {
 				render() difference() {
 					sphere(r=6,$fn=32);
 					sphere(r=5.2,$fn=32);
@@ -580,16 +584,15 @@ orrery_gear(146, 4, 12, moon_pitch);
 
 // sun shaft and globe
 translate([0,0,-2]) {
-	shaft(sun_height+8, 0);
+	shaft(sun_height, 0);
 
 	shaft2(2 - shim_height, shafts[4], shafts[0]);
-	translate([0,0,venus_height+2+2*gsh])
-	shaft2(1 - shim_height, shafts[1], shafts[0]);
 
 	translate([0,0,sun_height-0.8+gsh]) render() difference() {
 		sphere(r=8, $fn=32);
 		sphere(r=7.2, $fn=32);
 		rotate([-140,0,0]) cylinder(r=1, h=10, $fn=16);
+		rotate([-180,0,0]) cylinder(r=1, h=10, $fn=16);
 	}
 		
 }
@@ -647,5 +650,4 @@ module cutaway()
 rotate([0,0,-time*46/46])
 orrery();
 //make_gears();
-
 //cutaway();
