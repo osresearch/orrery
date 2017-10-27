@@ -502,16 +502,19 @@ render() difference()
 
 		translate([outer_drive1_pos[0], outer_drive1_pos[1], 0])
 		cylinder(d=shafts[4],h=brace_height-shim_height);
-	}
 
-	hull()
-	{
 		translate([drive_pos[0], drive_pos[1],0])
 		cylinder(d=shafts[4],h=brace_height-shim_height);
 
 		translate([outer_drive2_pos[0], outer_drive2_pos[1], 0])
 		cylinder(d=shafts[4],h=brace_height-shim_height);
 
+
+	translate([30,-19,0])
+	cylinder(r=3, h=brace_height-shim_height, $fn=32);
+
+	translate([-15,+34,0])
+	cylinder(r=3, h=brace_height-shim_height, $fn=32);
 	}
 
 /*
@@ -539,8 +542,12 @@ rotate([0,0,-15]) translate([40,0,0]) cylinder(r=2, h=brace_height-shim_height, 
 	cylinder(d=shafts[1]+shaft_clearance, h=brace_height+2, $fn=64);
 
 	// clear out some mass
-	translate([outer_drive1_pos[0]*0.66,outer_drive1_pos[1]*0.66,-1])
-	cylinder(d=17, h=brace_height+2);
+
+	for(a=[0:3]) {
+		rotate([0,0,a*40-20])
+		translate([shafts[7]/2+10,0,-1])
+		cylinder(d=14, h=brace_height+2);
+	}
 
 /*
 	translate([-3,27,-1])
@@ -646,14 +653,18 @@ render() difference()
 	}
 }
 
-/*
 // cylinders to hold the plates together
 // hand aligned to clear the gears
-	translate([36,-19,3*gsh])
+	translate([30,-19,3*gsh])
 	cylinder(r=3, h=4*gsh+2*brace_height-shim_height, $fn=32);
-translate([60,13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
+
+	translate([-15,+34,3*gsh])
+	cylinder(r=3, h=4*gsh+2*brace_height-shim_height, $fn=32);
+
+//translate([60,13,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 //translate([-12,26,3*gsh]) cylinder(r=2, h=4*gsh+2*brace_height-shim_height, $fn=32);
 
+/*
 // all the way from bottom to top plate
 rotate([0,0,115]) translate([40,0,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_height-shim_height, $fn=32);
 rotate([0,0,43]) translate([62,0,-brace_height]) cylinder(r=2, h=8*gsh+2*brace_height-shim_height, $fn=32);
