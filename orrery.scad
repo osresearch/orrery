@@ -49,7 +49,7 @@ moon_height = mars_height + gsh;
 earth_height = moon_height + gsh;
 venus_height = earth_height + gsh;
 mercury_height = venus_height + 2 + shim_height;
-sun_height = mercury_height + 10;
+sun_height = mercury_height + 5;
 
 
 // compute the mesh position for a third gear given the
@@ -313,9 +313,9 @@ module planets()
 
 		translate([20,0,0])
 		{
-			cylinder(d2=1, d1=2, h=5, $fn=32);
-			translate([0,0,5])
-			sphere(d=3, $fn=32);
+			cylinder(d2=1, d1=2, h=sun_height-mercury_height+1.5, $fn=32);
+			translate([0,0,sun_height-mercury_height])
+			sphere(r=1.5, $fn=32);
 		}
 	}
 
@@ -334,9 +334,9 @@ module planets()
 
 		translate([35,0,0])
 		{
-			cylinder(d2=1, d1=2, h=7, $fn=32);
-			translate([0,0,7])
-			sphere(d=4, $fn=32);
+			cylinder(d2=1, d1=2, h=sun_height-venus_height+2, $fn=32);
+			translate([0,0,sun_height-venus_height])
+			sphere(r=2, $fn=32);
 		}
 	}
 
@@ -368,21 +368,26 @@ module planets()
 		}
 
 		// the gear and the shaft for the moon/earth combo
-		translate([pitch_radius(moon_pitch,146+11)+gear_slop,0,-gear_height-shim_height])
+		translate([pitch_radius(moon_pitch,146+11)+gear_slop,0])
 		{
 			rotate([0,0,-time*(146/11)])
 			{
 				// line up with the fixed moon gear
 				rotate([0,0,+90+360/11/2])
+				translate([0,0,-gear_height-shim_height])
+				{
 				orrery_gear(11,0,3,moon_pitch);
+				shaft(sun_height-earth_height,0);
+				}
 
-				shaft(13,0);
-				translate([0,0,14]) sphere(r=4, $fn=32);
-				translate([0,3,14]) cube([1,6,1], center=true);
-				translate([0,6,14]) sphere(r=1, $fn=32);
+				translate([0,0,sun_height-earth_height]) {
+				translate([0,0,0]) sphere(r=4, $fn=32);
+				translate([0,3,0]) cube([1,6,1], center=true);
+				translate([0,6,0]) sphere(r=1, $fn=32);
+				}
 
 				// add a small keeper to prevent it from slipping
-				translate([0,0,2*gsh + 0*shim_height]) cylinder(d=6, h=shim_height*2, $fn=32);
+				translate([0,0,gsh]) cylinder(d=6, h=shim_height*2, $fn=32);
 				//translate([5,0,10]) sphere(r=1);
 			}
 		}
@@ -409,9 +414,9 @@ module planets()
 
 		translate([65,0,0])
 		{
-			cylinder(d2=1, d1=2, h=18, $fn=32);
-			translate([0,0,18])
-			sphere(d=6, $fn=32);
+			cylinder(d2=1, d1=2, h=sun_height-mars_height+3, $fn=32);
+			translate([0,0,sun_height-mars_height])
+			sphere(r=3, $fn=32);
 		}
 	}
 
@@ -436,10 +441,10 @@ module planets()
 
 		translate([85,0,0])
 		{
-			cylinder(d1=2, d2=1, h=20+8, $fn=32);
+			cylinder(d1=2, d2=1, h=sun_height-jupiter_height+8, $fn=32);
 
 			// make a hollow sphere
-			translate([0,0,20]) render() difference() {
+			translate([0,0,sun_height-jupiter_height]) render() difference() {
 				sphere(r=8, $fn=32);
 				sphere(r=7.2, $fn=32);
 				rotate([-140,0,0]) cylinder(r=1, h=10, $fn=32);
@@ -469,8 +474,8 @@ module planets()
 
 		translate([110,0,0])
 		{
-			cylinder(d1=2, d2=1, h=25+6, $fn=32);
-			translate([0,0,25]) {
+			cylinder(d1=2, d2=1, h=sun_height-saturn_height+6, $fn=32);
+			translate([0,0,sun_height-saturn_height]) {
 				render() difference() {
 					sphere(r=6,$fn=32);
 					sphere(r=5.2,$fn=32);
@@ -605,7 +610,7 @@ translate([0,0,-2]) {
 
 	shaft2(2 - shim_height, shafts[4], shafts[0]);
 
-	translate([0,0,sun_height-0.8+gsh]) render() difference() {
+	translate([0,0,sun_height+2+gsh]) render() difference() {
 		sphere(r=8, $fn=32);
 		sphere(r=7.2, $fn=32);
 		rotate([-140,0,0]) cylinder(r=1, h=10, $fn=16);
