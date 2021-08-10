@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+my $total_teeth = 92;
+my $mars_speed = 682.96;
+my $ratio1 = 4322.82 / $mars_speed;
+my $ratio2 = 10755.70 / $mars_speed;
+my @values;
+
+my $min = 12;
+my $max = $total_teeth - $min;
+
+for my $teeth1 ($min..$max)
+{
+	my $teeth2 = $total_teeth - $teeth1;
+	my $to = $teeth2 / $teeth1;
+
+	for my $teeth3 ($min..$max)
+	{
+		my $teeth4 = $total_teeth - $teeth3;
+		my $error1 = $ratio1 - $to * $teeth4 / $teeth3;
+
+		for my $teeth5 ($min..$max)
+		{
+			my $teeth6 = $total_teeth - $teeth5;
+			my $error2 = $ratio2 - $to * $teeth6 / $teeth5;
+
+			# sum-of-squares for error term
+			my $error = $error1*$error1 + $error2*$error2;
+			push @values, [ $error, $teeth1, $teeth2, $teeth3, $teeth4, $teeth5, $teeth6];
+		}
+	}
+
+	#printf "%d %d %.3f\n", $teeth, $teeth2, $error;
+}
+
+for (sort { $a->[0] <=> $b->[0] } @values)
+{
+	my ($error, @teeth) = @$_;
+	printf "%0.3f: %3d / %d , %3d / %3d , %3d / %3d\n", $error, @teeth;
+}
