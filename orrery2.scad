@@ -108,6 +108,38 @@ module shaft(l,d,thick=1)
 	}
 }
 
+module shaft_top(l,d,thick=1)
+{
+	render() difference()
+	{
+		shaft(l,d,thick);
+
+		// three cutout thingies
+		fanout(3)
+		translate([0,0,l])
+		rotate([0,90,0])
+		cylinder(r=4, h=d, $fn=3);
+	}
+}
+
+module shaft_coupler(d,thick=1)
+{
+	render() intersection()
+	{
+		difference() {
+			cylinder(h=5, d=d+thick, $fn=32);
+
+			translate([0,0,-1])
+			cylinder(h=5+2, d=d-thick, $fn=32);
+		}
+
+		translate([0,0,5]) fanout(3)
+		translate([0,0,l])
+		rotate([0,90,0])
+		cylinder(r=4, h=d, $fn=3);
+	}
+}
+
 pitch=4;
 
 
@@ -144,21 +176,21 @@ module outer_stack(h=5)
 
 module mercury_gear(h=5)
 {
-	orrery_gear(18, height=h-washer, bore_diameter=4);
-	shaft(h*16, 4, 1);
+	orrery_gear(18, height=h-washer, bore_diameter=4, spokes=3);
+	shaft_top(h*16, 4, 1);
 }
 
 module venus_gear(h=5)
 {
-	orrery_gear(35, height=h, bore_diameter=6);
-	shaft(h*14, 6, 1);
+	orrery_gear(35, height=h, bore_diameter=6, spokes=4);
+	shaft_top(h*14, 6, 1);
 }
 
 module earth_gear(h=5)
 {
 	// need to make room for the moon gear
-	orrery_gear(46, height=h, bore_diameter=8);
-	translate([0,0,h]) shaft(h*11, 8, 1);
+	orrery_gear(46, height=h, bore_diameter=8, spokes=5);
+	shaft_top(h*12, 8, 1);
 }
 
 module moon_brace(h=5)
@@ -180,7 +212,7 @@ module moon_brace(h=5)
 	}
 
 	// shaft up to the moon gear
-	shaft(h*10, 10, 1);
+	shaft_top(h*10, 10, 1);
 
 }
 
@@ -195,26 +227,29 @@ module moon_gear(h=5)
 		direction=0,
 		pitch=3
 	);
+
+	// and a shaft-alignment thingy
+	shaft_coupler(10);
 }
 
 module mars_gear(h=5)
 {
 	// both the mars gear and the take off
-	translate([0,0,h]) orrery_gear(18, height=h, bore_diameter=12);
+	translate([0,0,h]) orrery_gear(18, height=h, bore_diameter=12, spokes=6);
 	orrery_gear(60, height=h, bore_diameter=12);
-	translate([0,0,h]) shaft(h*7, 12, 1);
+	shaft_top(h*8, 12, 1);
 }
 
 module jupiter_gear(h=5)
 {
-	orrery_gear(56, height=h, bore_diameter=14);
-	translate([0,0,h]) shaft(h*4, 14, 1);
+	orrery_gear(56, height=h, bore_diameter=14, spokes=7);
+	shaft_top(h*5, 14, 1);
 }
 
 module saturn_gear(h=5)
 {
-	orrery_gear(73, height=h, bore_diameter=16);
-	translate([0,0,h]) shaft(h*2, 16, 1);
+	orrery_gear(73, height=h, bore_diameter=16, spokes=8);
+	shaft_top(h*3, 16, 1);
 }
 
 height = 5;
@@ -259,18 +294,15 @@ module plate()
 {
 translate([0,0,0]) color("yellow") outer_stack(h=height);
 translate([100,0,0]) color("pink") inner_stack(h=height);
-translate([0,80,0]) color("white") mercury_gear(h=height);
+translate([0,70,0]) color("white") mercury_gear(h=height);
 translate([50,80,0]) color("green") earth_gear(h=height);
 translate([120,80,0]) color("blue") venus_gear(h=height);
-translate([-30,100,0]) color("silver") moon_gear(h=height);
+translate([-30,100,0]) color("silver") moon_brace(h=height);
+translate([0,200,0]) color("silver") moon_gear(h=height);
 translate([200,-40,0]) color("red") mars_gear(h=height);
 translate([200,+40,0]) color("purple") jupiter_gear(h=height);
 translate([300,0,0]) color("gold") saturn_gear(h=height);
 }
-
-//plate();
-
-//assembly();
 
 module test()
 {
@@ -329,4 +361,11 @@ module test()
 	}
 }
 
-test();
+//test();
+
+plate();
+
+//assembly();
+
+//shaft_coupler(6);
+//moon_gear();
