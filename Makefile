@@ -13,7 +13,7 @@ all: \
 
 %.stl: orrery2.scad gears.scad
 	echo "rendering $@"
-	echo 'include <orrery2.scad>' > tmp.scad
-	echo '$(basename $@)();' >> tmp.scad
-	openscad -D mode=-1 -o "$@" tmp.scad
-	rm tmp.scad
+	echo 'include <orrery2.scad>' > $@.scad
+	echo '$(basename $@)();' >> $@.scad
+	openscad -D mode=-1 -o "$@" $@.scad
+	rm $@.scad
