@@ -122,6 +122,9 @@ module moon_brace(h=5)
 		// make sure there is an opening for the
 		// other shafts
 		translate([0,0,-1]) cylinder(d=bore,h=h+2);
+
+		// as well as clearance for the earth gear
+		translate([-center,0,-1]) cylinder(d=48*pitch/PI, h=h+2, $fn=32);
 	}
 
 	// shaft up to the moon gear
@@ -184,7 +187,7 @@ module saturn_gear(h=5)
 height = 5;
 center = pitch * (46 + 46) / (2*PI) + 0.25;
 
-module braceplate(h=height, do_mainshaft=1, top_hexes=0, bottom_hexes=0)
+module braceplate(h=height, do_mainshaft=1, do_hexes=0)
 {
 	// be sure that the brace clears the saturn gear
 	teeth = 73;
@@ -194,7 +197,7 @@ module braceplate(h=height, do_mainshaft=1, top_hexes=0, bottom_hexes=0)
 	{
 		hull() {
 			fanout(3, [teeth*pitch/(2*PI),0,0])
-			cylinder(r=10, h=h);
+			cylinder(r=14, h=h);
 
 			if (do_mainshaft)
 			translate([-center,0,0])
@@ -205,7 +208,12 @@ module braceplate(h=height, do_mainshaft=1, top_hexes=0, bottom_hexes=0)
 		fanout(3, [teeth*pitch/(2*PI)+5,0,-1])
 		{
 			cylinder(d=shaft_sizes[0], h=h+2, $fn=16);
-			translate([0,0,h-2]) hexnut(5);
+			translate([0,0,h-2]) {
+				if (do_hexes)
+					hexnut(5);
+				else
+					cylinder(d=12, h=h+2);
+			}
 		}
 
 /*
@@ -311,6 +319,7 @@ translate([190,170,0]) color("white") topplate(h=height);
 
 
 plate();
+//mercury_gear();
 
 //assembly();
 
