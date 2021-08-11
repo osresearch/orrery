@@ -1,183 +1,80 @@
 /*
  * Two-shaft orrery of the first six planets
  * and the moon of the third.
- *
- * 
  */
+include <gears.scad>
 
-include <MCAD/involute_gears.scad> 
-include <MCAD/teardrop.scad> 
-
-// thickness of the inter-gear washers
-washer = 0.5;
-
-module mirrordupe(p)
-{
-    children();
-    mirror(p) children();
-}
-
-module fanout(n=5, p=[0,0,0])
-{
-	for(i=[1:n])
-		rotate([0,0,90+i*360/n])
-		translate(p)
-		children();
-}
-
-// create a washer boss to reduce friction between gears
-module washer(inner_diameter)
-{
-	translate([0,0,5-washer])
-	render() difference()
-	{
-		cylinder(d=inner_diameter+4,h=washer, $fn=32);
-		translate([0,0,-1]) cylinder(d=inner_diameter, h=washer+1, $fn=32);
-	}
-}
-
-module herringbone(
-	number_of_teeth,
-	height=5,
-	pitch=4,
-	twist=1,
-	bore_diameter=5
-) {
-	// circumference = pitch * number of teeth
-	// radius = circumference / (2*PI)
-	// circular_pitch = radius * 360 / number_of_teeth
-	//    = (pitch * 360) / (2*PI)
-
-	mirrordupe([0,0,height])
-	gear(
-		number_of_teeth	= number_of_teeth,
-		circular_pitch	= (pitch * 360) / (2*PI),
-		twist		= twist,
-		gear_thickness	= height/2,
-		rim_thickness	= height/2,
-		hub_thickness	= height/2,
-		bore_diameter	= bore_diameter
-	);
-}
-
-
-module orrery_gear(
-	number_of_teeth,
-	height=5,
-	pitch=4,
-	spokes=5,
-	thickness=3,
-	bore_diameter=5,
-	hub_thickness=5,
-	spoke_thickness=3,
-	direction=1
-)
-{
-	// generate a gear with most of the inside cut out
-	translate([0,0,height/2])
-	herringbone(
-		number_of_teeth=number_of_teeth,
-		height=height,
-		pitch=pitch,
-		bore_diameter=pitch*number_of_teeth/PI - thickness*2,
-		twist = direction == 0 ? 0 : direction > 0 ? 2 : -2
-	);
-
-	// generate the spokes spiraling around the center
-	fanout(spokes, [bore_diameter/2,-spoke_thickness/2,0])
-		cube([
-			pitch*number_of_teeth/(2*PI)-bore_diameter/2-thickness,
-			spoke_thickness,
-			height
-		]);
-
-	// generate the center hub
-	render() difference()
-	{
-		cylinder(d=bore_diameter+hub_thickness, h=height, $fn=32);
-		translate([0,0,-1]) cylinder(d=bore_diameter, h=height+2, $fn=32);
-	}
-}
-
-module shaft(l,d,thick=1)
-{
-	render() difference()
-	{
-		cylinder(h=l, d=d, $fn=32);
-		translate([0,0,-1]) cylinder(h=l+2, d=d-thick, $fn=32);
-	}
-}
-
-module shaft_top(l,d,thick=1)
-{
-	render() difference()
-	{
-		shaft(l,d,thick);
-
-		// three cutout thingies
-		fanout(3)
-		translate([0,0,l])
-		rotate([0,90,0])
-		cylinder(r=4, h=d, $fn=3);
-	}
-}
-
-module shaft_coupler(d,thick=1)
-{
-	render() intersection()
-	{
-		difference() {
-			cylinder(h=5, d=d+thick, $fn=32);
-
-			translate([0,0,-1])
-			cylinder(h=5+2, d=d-thick, $fn=32);
-		}
-
-		translate([0,0,5]) fanout(3)
-		translate([0,0,l])
-		rotate([0,90,0])
-		cylinder(r=4, h=d, $fn=3);
-	}
-}
-
-pitch=4;
-
-
+// The inner stack turns mercury, earth, venus and mars.
+// it turns in the NEGATIVE direction, to mesh with the
+// positive turning planet gears.
+// The entire stack turns on a solid shaft.
 module inner_stack(h=5)
 {
-	shaft(h*5, 5, 1);
+	bore_diameter=12;
+	spokes=9;
 
-	// mars, skipping one level
-	translate([0,0,4*h]) orrery_gear(32, height=h, direction=-1);
+	//shaft(h*5, bore_diameter, 1);
+
+	// mars, skipping one level and with a washer on top
+	translate([0,0,4*h])
+	{
+		orrery_gear(32, height=h-washer, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
+		washer(bore_diameter);
+	}
+
+	// spokes to hold up the mars gear during printing
+	translate([0,0,3*h])
+	{
+		fanout(spokes, [bore_diameter/2,-3/2,0])
+			cube([
+				pitch*32/(2*PI)-bore_diameter/2-2,
+				3,
+				height
+			]);
+		render() difference() {
+			cylinder(d=bore_diameter+2*5, h=height, $fn=spokes);
+			translate([0,0,-1]) cylinder(d=bore_diameter, h=height+2, $fn=32);
+		}
+	}
+
 
 	// earth
-	translate([0,0,2*h]) orrery_gear(46,height=h, direction=-1);
+	translate([0,0,2*h]) orrery_gear(46,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 
 	// venus
-	translate([0,0,1*h]) orrery_gear(57,height=h, direction=-1);
+	translate([0,0,1*h]) orrery_gear(57,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 
 	// mercury
-	translate([0,0,0*h]) orrery_gear(74,height=h, direction=-1);
+	translate([0,0,0*h]) orrery_gear(74,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 }
 
+// The outer planet stack turns in the NEGATIVE direction
+// and is powered by the Mars takeoff (turning in the positive
+// direction), and in turn drives the Jupiter and Saturn
+// gears (both in positive direction).
+// The outer stack turns on a solid shaft shared with the
+// inner stack, so the outer planets must have the same
+// total number of teeth as the inner planets.
 module outer_stack(h=5)
 {
-	shaft(h*3, 5, 1);
+	spokes = 7;
+	bore_diameter = 12;
+	//shaft(h*3, bore_diameter, 1);
 
 	// saturn
-	translate([0,0,2*h]) orrery_gear(19,height=h, direction=-1);
+	translate([0,0,2*h]) orrery_gear(19,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 
 	// jupiter
-	translate([0,0,1*h]) orrery_gear(36,height=h, direction=-1);
+	translate([0,0,1*h]) orrery_gear(36,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 
 	// takeoff
-	translate([0,0,0*h]) orrery_gear(74,height=h, direction=-1);
+	translate([0,0,0*h]) orrery_gear(74,height=h, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 }
 
 module mercury_gear(h=5)
 {
-	orrery_gear(18, height=h-washer, bore_diameter=4, spokes=3);
-	shaft_top(h*16, 4, 1);
+	orrery_gear(18, height=h-washer, bore_diameter=5, spokes=3);
+	shaft_top(h*16, 5, 1);
 }
 
 module venus_gear(h=5)
@@ -189,17 +86,19 @@ module venus_gear(h=5)
 module earth_gear(h=5)
 {
 	// need to make room for the moon gear
-	orrery_gear(46, height=h, bore_diameter=8, spokes=5);
-	shaft_top(h*12, 8, 1);
+	orrery_gear(46, height=h, bore_diameter=7, spokes=5);
+	shaft_top(h*12, 7, 1);
 }
 
 module moon_brace(h=5)
 {
+	// be sure that the brace clears the earth gear
+	// and hope it also clears the drive mercury gear
 	render() difference()
 	{
 		union() {
 			hull()
-			fanout(3, [0,-30,0])
+			fanout(3, [46*pitch/(2*PI),0,0])
 			cylinder(r=10, h=h-washer);
 
 			// washer for the mars gear to sit on
@@ -208,11 +107,15 @@ module moon_brace(h=5)
 
 		// make sure there is an opening for the
 		// other shafts
-		translate([0,0,-1]) cylinder(d=10-1,h=h+2);
+		translate([0,0,-1]) cylinder(d=9,h=h+2);
+
+		// and the support braces
+		fanout(3, [46*pitch/(2*PI)+5,0,-1])
+		cylinder(d=2, h=h+2, $fn=16);
 	}
 
 	// shaft up to the moon gear
-	shaft_top(h*10, 10, 1);
+	shaft_top(h*10, 9, 1);
 
 }
 
@@ -225,7 +128,7 @@ module moon_gear(h=5)
 		spokes=12,
 		bore_diameter=10,
 		direction=0,
-		pitch=3
+		pitch=4
 	);
 
 	// and a shaft-alignment thingy
@@ -304,68 +207,10 @@ translate([200,+40,0]) color("purple") jupiter_gear(h=height);
 translate([300,0,0]) color("gold") saturn_gear(h=height);
 }
 
-module test()
-{
-	teeth1=18;
-	teeth2=30;
-	dist=(teeth1+teeth2)*pitch / (2*PI) + 0.5;
 
-	color("red") {
-		orrery_gear(teeth1, height=5-washer, bore_diameter=4, direction=+1);
-		shaft(25, 4, 1);
-		washer(4);
-	}
+//plate();
 
-	//translate([0,0,5])
-	translate([-30,20,0])
-	color("blue") {
-		orrery_gear(teeth2, height=5-washer, bore_diameter=6, direction=+1);
-		shaft(15, 6, 1);
-		washer(6);
-	}
-
-	//translate([dist,0,0])
-	translate([35,0,0])
-	{
-		orrery_gear(teeth2, 5, pitch=pitch, direction=-1, bore_diameter=6);
-		translate([0,0,5])
-		orrery_gear(teeth1, 5-washer, pitch=pitch, direction=-1, bore_diameter=6);
-		translate([0,0,5]) washer(6);
-	}
-	
-	translate([0,40,0])
-	{
-		hull() {
-			cylinder(d=20, h=5-washer);
-			translate([dist,0,0]) cylinder(d=20, h=5-washer);
-		}
-
-		shaft(20,2);
-		washer(2);
-
-		translate([dist,0,0]) {
-			shaft(20,4);
-			washer(4);
-		}
-	}
-
-	translate([0,65,0])
-	render() difference() {
-		hull() {
-			cylinder(d=20, h=5);
-			translate([dist,0,0]) cylinder(d=20, h=5);
-		}
-
-		translate([0,0,-1]) cylinder(d=2+0.5, h=5+2, $fn=32);
-		translate([dist,0,-1]) cylinder(d=4+0.5, h=5+2, $fn=32);
-	}
-}
-
-//test();
-
-plate();
-
-//assembly();
+assembly();
 
 //shaft_coupler(6);
 //moon_gear();
