@@ -29,14 +29,15 @@ module inner_stack(h=5)
 
 	//shaft(h*5, bore_diameter, 1);
 
-	// mars, skipping one level and with a washer on top
-	translate([0,0,4*h])
-		orrery_gear(32, height=h-washer, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
+	// mars, double height with a washer on top
+	translate([0,0,3*h])
+		orrery_gear(32, height=2*h-washer, direction=-1, bore_diameter=bore_diameter, spokes=spokes);
 
+/*
 	// spokes to hold up the mars gear during printing
 	translate([0,0,3*h])
 	{
-		fanout(spokes, [bore_diameter/2,-3/2,0])
+		fanout(spokes, [bore_diameter/2,-3/2 - 3,0])
 			cube([
 				pitch*32/(2*PI)-bore_diameter/2-2,
 				3,
@@ -47,6 +48,7 @@ module inner_stack(h=5)
 			translate([0,0,-1]) cylinder(d=bore_diameter, h=height+2, $fn=32);
 		}
 	}
+*/
 
 
 	// earth
@@ -318,10 +320,8 @@ translate([190,170,0]) color("white") topplate(h=height);
 }
 
 
-plate();
-//mercury_gear();
+mode = 0;
 
-//assembly();
+if (mode==0) assembly(); else
+if (mode==1) plate();
 
-//shaft_coupler(6);
-//moon_gear();
