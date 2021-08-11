@@ -112,6 +112,7 @@ module orrery_gear(
 		]);
 
 	// generate the center hub
+	if (spokes != 0)
 	rotate([0,0,direction == 0 ? 0 : direction > 0 ? 180/spokes/2 : -180/spokes/2])
 	render() difference()
 	{
@@ -166,3 +167,7 @@ module shaft_coupler(d,thick=1)
 	}
 }
 
+module hexnut(d)
+{
+	cylinder(d=1.8*d, h=3.5, $fn=6);
+}

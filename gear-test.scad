@@ -36,10 +36,6 @@ module drive_gear()
 	//translate([0,0,5]) washer(bore);
 }
 
-module hexnut(d)
-{
-	cylinder(d=1.8*d, h=3.5, $fn=6);
-}
 
 module base_plate()
 {
