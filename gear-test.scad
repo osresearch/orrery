@@ -11,16 +11,16 @@ module planet1_gear()
 	color("red") {
 		orrery_gear(teeth1, height=5-washer, bore_diameter=bore, direction=+1);
 		washer(bore);
-		shaft_top(25, bore, 1);
+		shaft_top(25, bore, 2);
 	}
 }
 
 module planet2_gear()
 {
-	bore=7;
+	bore=8;
 	color("blue") {
 		orrery_gear(teeth2, height=5-washer, bore_diameter=bore, direction=+1);
-		shaft_top(15, bore, 1);
+		shaft_top(15, bore, 2);
 		washer(bore);
 	}
 }
@@ -85,8 +85,8 @@ module top_plate()
 			translate([dist,0,0]) cylinder(d=20, h=5);
 		}
 
-		// for the output shaft, inner 7, outer 8
-		translate([0,0,-1]) cylinder(d=9, h=5+2, $fn=32);
+		// for the output shaft, inner 8, outer 10
+		translate([0,0,-1]) cylinder(d=11, h=5+2, $fn=32);
 
 		// for the input shaft
 		translate([dist,0,-1]) cylinder(d=5, h=5+2, $fn=32);
@@ -113,13 +113,13 @@ module assembly()
 
 module plate()
 {
-	translate([0,0,0]) top_plate();
-	translate([0,30,0]) base_plate();
+	translate([0,30,0]) top_plate();
+	//translate([0,30,0]) base_plate();
 
 	translate([0,60,0]) planet1_gear();
 	translate([50,60,0]) planet2_gear();
 
-	translate([70,10,0]) drive_gear();
+	//translate([70,10,0]) drive_gear();
 }
 
 

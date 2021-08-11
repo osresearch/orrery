@@ -40,7 +40,7 @@ module washer(inner_diameter)
 	translate([0,0,height-washer])
 	render() difference()
 	{
-		cylinder(d=inner_diameter+4,h=washer, $fn=32);
+		cylinder(d=inner_diameter+6,h=washer, $fn=32);
 		translate([0,0,-1]) cylinder(d=inner_diameter, h=washer+1, $fn=32);
 	}
 }
@@ -68,7 +68,8 @@ module herringbone(
 	gear(
 		number_of_teeth	= number_of_teeth,
 		circular_pitch	= (pitch * 360) / (2*PI),
-		twist		= twist,
+		//twist		= twist,
+		twist		= 0, // all straight
 		gear_thickness	= height/2,
 		rim_thickness	= height/2,
 		hub_thickness	= height/2,
