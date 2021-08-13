@@ -10,6 +10,13 @@ all: \
 	topplate.stl \
 	inner_stack.stl \
 	outer_stack.stl \
+	arms
+
+arms: \
+	mercury_arm.stl \
+	venus_arm.stl \
+	earth_arm.stl \
+
 
 %.stl: orrery2.scad gears.scad
 	echo "rendering $@"

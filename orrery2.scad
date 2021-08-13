@@ -6,6 +6,8 @@ include <gears.scad>
 
 // 1mm shaft walls turned out to be too thin
 shaft_wall = 2;
+
+// mars - saturn have too much space; maybe needs thicker wall?
 shaft_sizes = [
 	5 + 2.75*0, // 0 mercury
 	5 + 2.75*1, // 1 venus
@@ -301,6 +303,12 @@ color("pink") translate([-center,0,0*height]) inner_stack(h=height);
 
 	translate([0,0,-2*height]) baseplate();
 	translate([0,0,8*height]) topplate();
+
+	translate([0,0,washer]) {
+	translate([0,0,16*height]) rotate([180,0,0]) mercury_arm();
+	translate([0,0,15*height]) rotate([180,0,0]) venus_arm();
+	translate([0,0,14*height]) rotate([180,0,0]) earth_arm();
+	}
 }
 
 module plate()
@@ -320,8 +328,57 @@ translate([190,170,0]) color("white") topplate(h=height);
 }
 
 
-mode = 0;
+module planet_arm(len,bore,h=height,thick=1)
+{
+	render() difference() {
+		hull() {
+			cylinder(d=bore+shaft_wall*4, h=h-washer);
+			translate([len,0,0]) cylinder(d=4, h=1, $fn=32);
+		}
+
+		translate([0,0,-1])
+		cylinder(d=bore+shaft_wall*2, h=height+2);
+	}
+}
+
+module mercury_arm()
+{
+	bore = shaft_sizes[0];
+	shaft_coupler(bore, shaft_wall);
+
+	planet_arm(20, bore);
+}
+
+module venus_arm()
+{
+	bore = shaft_sizes[1];
+	shaft_coupler(bore, shaft_wall);
+	planet_arm(30, bore);
+}
+
+module earth_arm()
+{
+	bore = shaft_sizes[2];
+	shaft_coupler(bore, shaft_wall);
+	planet_arm(40, bore);
+}
+
+mode = 2;
 
 if (mode==0) assembly(); else
-if (mode==1) plate();
+if (mode==1) plate(); else
+if (mode==2) {
+	translate([-20,0,0]) {
+	color("red") mercury_gear();
+	translate([0,0,height*17]) rotate([180,0,0]) mercury_arm();
+	}
+
+	translate([+30,0,0]) {
+	color("red") venus_gear();
+	translate([0,0,height*16]) rotate([180,0,0]) venus_arm();
+	}
+
+	venus_arm();
+}
+
 

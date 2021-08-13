@@ -148,23 +148,40 @@ module shaft_top(l,d,thick=1)
 	}
 }
 
+module hollow_cylinder(d1,d2,h)
+{
+	render() difference() {
+		cylinder(h=h, d=d1, $fn=32);
+
+		translate([0,0,-1])
+		cylinder(h=h+2, d=d2, $fn=32);
+	}
+}
+
 // Create the coupler that will fasten to the top
 // of a hollow shaft of inner diameter d.
-module shaft_coupler(d,thick=1)
+module shaft_coupler(d,thick=1,clearance=0.25,spokes=3)
 {
+	// the three "cutouts" that are embossed on the inside
 	render() intersection()
 	{
-		difference() {
-			cylinder(h=height-washer, d=d+thick, $fn=32);
+		hollow_cylinder(d+thick*2, d, height);
 
-			translate([0,0,-1])
-			cylinder(h=height+2, d=d, $fn=32);
-		}
-
-		translate([0,0,height]) fanout(3)
+		// need to match the cutouts of shaft_top
+		mirror([0,0,1])
+		fanout(spokes, [0,0,-0.5])
 		rotate([0,90,0])
 		cylinder(r=4, h=d, $fn=3);
 	}
+
+	// thin washer at the "top"
+	//translate([0,0,height-washer*2])
+	hollow_cylinder(d+thick*2, d, 0.5);
+
+	// and the outer ring that slips over the shaft
+	// with a little bit of extra clearance
+	//translate([0,0,washer])
+	hollow_cylinder(d+thick*4, d+thick+clearance, height);
 }
 
 module hexnut(d)
